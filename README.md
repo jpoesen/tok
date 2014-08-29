@@ -6,6 +6,9 @@ This is a simple proof-of-concept Drupal 7 module to demo custom tokens to targe
 This module is meant as a starting point for developers. In its current state this module provides a new token 
 'foo' that references a specific field_collection (in code).
 
+There's obviously a lot than can be done to make this better, more generic, etc, but the goal is to keep this example
+easy to follow for everyone who's not a token/entity/field wrangling expert.
+
 **Dependencies:**
 
 * token
