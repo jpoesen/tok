@@ -1,0 +1,4 @@
+name = Tok
+description = Custom token demo.
+core = 7.x
+dependencies[] = token

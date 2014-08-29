@@ -1,0 +1,80 @@
+<?
+/**
+ * Implements hook_token_info().
+ */
+function tok_token_info() {
+  $info['tokens']['tok']['foo'] = array(
+    'name' => t('Tok Foo'),
+    'description' => t('The tok foo token.'),
+  );
+  return $info;
+}
+
+/**
+ * Implements hook_tokens().
+ */
+function tok_tokens($type, $tokens, array $data = array(), array $options = array()) {
+  $replacements = array();
+
+  if ($type == 'tok') {
+    foreach ($tokens as $name => $original) {
+
+      // We either receive the tokens as 'foo' or 'foo:1', 'foo:2',
+      // so we split them out
+      $parts = explode(':', $name);
+      $delta = (isset($parts[1])) ? $parts[1] : FALSE;
+      $token_name = $parts[0];
+
+      switch ($token_name) {
+        case 'foo':
+
+          $target = new stdClass();
+          $target->field_collection_name = 'field_foocollect';
+          $target->field_names = array('field_foo_firstname', 'field_foo_lastname');
+          $target->delta = $delta;
+          $target->entity_id = 0;
+
+          $value = '';
+
+          if ($target->delta) {
+            // Substitute with a specific fieldcol instance value (delta)
+
+            // Adapt the requested delta to the real delta:
+            // when someone wants value 1, we retrieve value with index 0, etc.
+            $target->delta = $target->delta -1;
+
+            // Retrieve the fieldcollection entity's id that matches the requested delta
+            if (isset($data['node']->{$target->field_collection_name}[LANGUAGE_NONE][$target->delta])) {
+              $target->entity_id = $data['node']->{$target->field_collection_name}[LANGUAGE_NONE][$target->delta]['value'];
+            }
+            else {
+              break;
+            }
+
+            // Load up the fieldcollection entity
+            $entities = entity_load('field_collection_item', array($target->entity_id));
+            $entity = $entities[$target->entity_id];
+
+            // Fetch and render the specified field names using the 'token' view mode.
+            foreach ($target->field_names as $field_name) {
+              $instance = field_info_instance('field_collection_item', $field_name, $target->field_collection_name);
+              $display = $instance['display']['token'];
+              $element = field_view_field('field_collection_item', $entity, $field_name, $display);
+              $value .= render($element);
+            }
+
+          } else {
+            // (we arrive here when delta is absent or <= 0)
+            // Substitute with a the whole fieldcol instance (all values)
+            // TODO: render whole fielcollection instance
+
+            $value = 'TODO: implement';
+          }
+
+          $replacements[$original] = $value;
+          break;
+      }
+    }
+  }
+  return $replacements;
+}
