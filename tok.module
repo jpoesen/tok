@@ -33,12 +33,18 @@ function tok_tokens($type, $tokens, array $data = array(), array $options = arra
       switch ($token_name) {
         case 'foo':
 
+          // This is where we indicate which fieldcollection entity this
+          // token maps to, and which fields on it we want to render
+          // when substituting.
           $target = new stdClass();
           $target->field_collection_name = 'field_foocollect';
-          $target->field_names = array('field_foo_firstname', 'field_foo_lastname');
+          $target->field_names = array(
+            'field_foo_firstname',
+            'field_foo_lastname',
+          );
+
           $target->delta = $delta;
           $target->entity_id = 0;
-
           $value = '';
 
           if ($target->delta) {
