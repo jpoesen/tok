@@ -1,4 +1,9 @@
-<?
+<?php
+/**
+ * @file
+ * A simple demo to show how to provide tokens and use contextual info.
+ */
+
 /**
  * Implements hook_token_info().
  */
@@ -20,7 +25,7 @@ function tok_tokens($type, $tokens, array $data = array(), array $options = arra
     foreach ($tokens as $name => $original) {
 
       // We either receive the tokens as 'foo' or 'foo:1', 'foo:2',
-      // so we split them out
+      // so we split them out.
       $parts = explode(':', $name);
       $delta = (isset($parts[1])) ? $parts[1] : FALSE;
       $token_name = $parts[0];
@@ -37,13 +42,14 @@ function tok_tokens($type, $tokens, array $data = array(), array $options = arra
           $value = '';
 
           if ($target->delta) {
-            // Substitute with a specific fieldcol instance value (delta)
+            // Substitute with a specific fieldcol instance value (delta).
 
             // Adapt the requested delta to the real delta:
             // when someone wants value 1, we retrieve value with index 0, etc.
-            $target->delta = $target->delta -1;
+            $target->delta = $target->delta - 1;
 
-            // Retrieve the fieldcollection entity's id that matches the requested delta
+            // Retrieve the fieldcollection entity's id that matches
+            // the requested delta.
             if (isset($data['node']->{$target->field_collection_name}[LANGUAGE_NONE][$target->delta])) {
               $target->entity_id = $data['node']->{$target->field_collection_name}[LANGUAGE_NONE][$target->delta]['value'];
             }
@@ -51,11 +57,12 @@ function tok_tokens($type, $tokens, array $data = array(), array $options = arra
               break;
             }
 
-            // Load up the fieldcollection entity
+            // Load up the fieldcollection entity.
             $entities = entity_load('field_collection_item', array($target->entity_id));
             $entity = $entities[$target->entity_id];
 
-            // Fetch and render the specified field names using the 'token' view mode.
+            // Fetch and render the specified field names using
+            // the 'token' view mode.
             foreach ($target->field_names as $field_name) {
               $instance = field_info_instance('field_collection_item', $field_name, $target->field_collection_name);
               $display = $instance['display']['token'];
@@ -63,14 +70,14 @@ function tok_tokens($type, $tokens, array $data = array(), array $options = arra
               $value .= render($element);
             }
 
-          } else {
-            // (we arrive here when delta is absent or <= 0)
-            // Substitute with a the whole fieldcol instance (all values)
-            // TODO: render whole fielcollection instance
+          }
+          else {
+            // No delta was provided in the token, or it's  <= 0).
+            // Substitute with a the whole fieldcol instance (all values).
+            // TODO: render whole fielcollection instance.
 
             $value = 'TODO: implement';
           }
-
           $replacements[$original] = $value;
           break;
       }
